@@ -221,6 +221,17 @@ input.txt{width:100%;padding:11px 14px;border-radius:14px;border:2.5px solid var
 .lrise{animation:lrise 4s cubic-bezier(.2,.7,.3,1)}
 @keyframes lrise{0%{transform:translateY(180px) scale(.5);opacity:0}15%{opacity:1}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.lbob,.lrise,.actor.dance .bodyg{animation:none}}
+
+/* v7: crackers */
+.fz{transform-box:fill-box;transform-origin:center;animation:fzk .14s infinite alternate}
+@keyframes fzk{from{transform:scale(.7)}to{transform:scale(1.4)}}
+.spin{transform-box:fill-box;transform-origin:center;animation:spinr .3s linear infinite}
+@keyframes spinr{to{transform:rotate(360deg)}}
+.soot{display:none}.actor.sooty .soot{display:inline}
+#stage{transition:filter .15s}#stage.flash{filter:brightness(1.7)}
+#sparkbar{position:absolute;left:0;right:0;bottom:0;z-index:7;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;transform:translateY(120%);transition:transform .4s;pointer-events:none}
+#sparkbar.show{transform:none}#sparkbar button{pointer-events:auto;width:auto;padding:12px 30px}
+@media (prefers-reduced-motion:reduce){.fz,.spin{animation:none}}
 </style>
 
 <div id="app">
@@ -240,6 +251,7 @@ input.txt{width:100%;padding:11px 14px;border-radius:14px;border:2.5px solid var
   <div class="pill" id="progwrap" style="position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:4;padding:5px 12px"><div id="prog"></div></div>
   <div id="toast"></div>
   <div id="banner"></div>
+  <div id="sparkbar"><button class="ok" id="sparkdone">Done 🎇</button></div>
   <div id="cleanbar"><div class="cbcard"><div class="cbrow"><span id="cbhint">Rub the dirt away with your finger</span><b id="cbpct">0%</b></div><div class="cbtrack"><i id="cbfill"></i></div><div id="cbz"></div><button id="cbpause" class="link" style="margin:2px auto 0;display:block;font-size:13px">Take a break</button></div></div>
   <div id="bar">
     <button id="finale">Light up our home</button>
@@ -542,7 +554,7 @@ function buildScene(){
     return h})()}</g>
   <g id="petals" pointer-events="none">${petals}</g>
   <g id="shrub" pointer-events="none">${blossom(384,492,22,10)}</g>
-  <g id="sponge" style="display:none" pointer-events="none"><g transform="translate(0 -4)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#ffd54a" stroke="#d99a1a" stroke-width="1.4"/><rect x="-13" y="2" width="26" height="6" rx="3" fill="#3fb86a" opacity=".9"/><circle cx="-6" cy="-3" r="1.4" fill="#e0b020"/><circle cx="4" cy="-4" r="1.2" fill="#e0b020"/><circle cx="8" cy="-1" r="1.6" fill="#e0b020"/><circle cx="-9" cy="-14" r="3" fill="#fff" opacity=".7"/><circle cx="2" cy="-18" r="2.2" fill="#fff" opacity=".7"/></g></g><g id="ghost" style="display:none" pointer-events="none"><g transform="translate(0 -4)"><rect id="ghostbody" x="-13" y="-8" width="26" height="16" rx="5" fill="#ff8fb5" stroke="#e0457f" stroke-width="1.4"/><rect x="-13" y="2" width="26" height="6" rx="3" fill="#fff" opacity=".6"/></g><text id="ghostname" y="-16" text-anchor="middle" font-size="9" fill="#fff" stroke="#3a2438" stroke-width="2.4" paint-order="stroke" font-family="Nunito" font-weight="800"></text></g><g id="spots"></g><g id="badges"></g>`;
+  <g id="fxg" pointer-events="none"></g><g id="fxg2"></g><g id="sponge" style="display:none" pointer-events="none"><g transform="translate(0 -4)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#ffd54a" stroke="#d99a1a" stroke-width="1.4"/><rect x="-13" y="2" width="26" height="6" rx="3" fill="#3fb86a" opacity=".9"/><circle cx="-6" cy="-3" r="1.4" fill="#e0b020"/><circle cx="4" cy="-4" r="1.2" fill="#e0b020"/><circle cx="8" cy="-1" r="1.6" fill="#e0b020"/><circle cx="-9" cy="-14" r="3" fill="#fff" opacity=".7"/><circle cx="2" cy="-18" r="2.2" fill="#fff" opacity=".7"/></g></g><g id="ghost" style="display:none" pointer-events="none"><g transform="translate(0 -4)"><rect id="ghostbody" x="-13" y="-8" width="26" height="16" rx="5" fill="#ff8fb5" stroke="#e0457f" stroke-width="1.4"/><rect x="-13" y="2" width="26" height="6" rx="3" fill="#fff" opacity=".6"/></g><text id="ghostname" y="-16" text-anchor="middle" font-size="9" fill="#fff" stroke="#3a2438" stroke-width="2.4" paint-order="stroke" font-family="Nunito" font-weight="800"></text></g><g id="spots"></g><g id="badges"></g>`;
 }
 
 /* ---------- sky & light, driven by how finished the home is ---------- */
@@ -912,11 +924,11 @@ function onPeers(){const o=others(),el=$('#partner');
 function renderBadges(){const g=$('#badges');if(!g)return;g.innerHTML='';return;g.innerHTML=others().filter(p=>p.presence.at&&TASKS[p.presence.at]).map(p=>{const t=TASKS[p.presence.at],R=ROLE[p.presence.role]||ROLE.her;return `<g class="badge"><circle cx="${t.x+18}" cy="${t.y-20}" r="10" fill="#fff" stroke="${R.col}" stroke-width="3"/><text x="${t.x+18}" y="${t.y-15}" font-size="12" text-anchor="middle">${R.em}</text></g>`}).join('')}
 
 /* hugs, cheers, kisses */
-const EMOTES=[{k:'hug',em:'🤗',t:'Hug',say:'sent you a hug'},{k:'cheer',em:'👏',t:'Cheer',say:'is cheering for you'},{k:'kiss',em:'😘',t:'Kiss',say:'blew you a kiss'},{k:'night',em:'🌙',t:'Goodnight',say:'says goodnight'},{k:'miss',em:'🥺',t:'Miss you',say:'misses you'},{k:'dance',em:'💃',t:'Dance',say:'wants to dance with you'},{k:'poke',em:'😳',t:'',say:'tickled you',hide:true}];
+const EMOTES=[{k:'hug',em:'🤗',t:'Hug',say:'sent you a hug'},{k:'cheer',em:'👏',t:'Cheer',say:'is cheering for you'},{k:'kiss',em:'😘',t:'Kiss',say:'blew you a kiss'},{k:'night',em:'🌙',t:'Goodnight',say:'says goodnight'},{k:'miss',em:'🥺',t:'Miss you',say:'misses you'},{k:'naughty',em:'😏',t:'Naughty',say:'is being naughty'},{k:'dance',em:'💃',t:'Dance',say:'wants to dance with you'},{k:'poke',em:'😳',t:'',say:'tickled you',hide:true}];
 $('#bar').insertAdjacentHTML('afterbegin',EMOTES.filter(e=>!e.hide).map(e=>`<button class="em" data-k="${e.k}"><span>${e.em}</span>${e.t}</button>`).join(''));
 $('#bar').addEventListener('click',e=>{const b=e.target.closest('.em');if(!b||!b.dataset.k)return;ac();const em=EMOTES.find(x=>x.k===b.dataset.k);sfx.love();buzz(12);const r=b.getBoundingClientRect(),sr=$('#stage').getBoundingClientRect();floatEmoji(em.em,6,r.left-sr.left+r.width/2,r.top-sr.top);actorEmote(me==='both'?'her':me,em.em);if(em.k==='night')goodnight();if(em.k==='dance')danceNow();
   if(room)room.emit('emote',{k:em.k,role:me==='both'?'her':me,name:myName||''}).catch(()=>{});else toast('Sent. Share the link so they can feel it too.')});
-function onEmote(m){if(m.sameTab||m.isMe)return;const d=m.data||{},em=EMOTES.find(x=>x.k===d.k);if(!em)return;if(d.k==='poke'){const mr=me==='both'?'her':me;if(mr){actorEmote(mr,'😳');ac();sfx.love();buzz([30,40,30]);toast(`${String(d.name||nameOf(d.role==='him'?'him':'her')).slice(0,14)} tickled you 😳`,2800)}return}const n=String(d.name||nameOf(d.role==='him'?'him':'her')).slice(0,14);ac();sfx.love();buzz([20,30,20]);floatEmoji(em.em,14);actorEmote(d.role==='him'?'him':'her',em.em);if(em.k==='night')goodnight();if(em.k==='dance')danceNow();toast(`${n} ${em.say} ${em.em}`,3500)}
+function onEmote(m){if(m.sameTab||m.isMe)return;const d=m.data||{};if(d.k==='crk'){onCrk(d);return}const em=EMOTES.find(x=>x.k===d.k);if(!em)return;if(d.k==='poke'){const mr=me==='both'?'her':me;if(mr){actorEmote(mr,'😳');ac();sfx.love();buzz([30,40,30]);toast(`${String(d.name||nameOf(d.role==='him'?'him':'her')).slice(0,14)} tickled you 😳`,2800)}return}const n=String(d.name||nameOf(d.role==='him'?'him':'her')).slice(0,14);ac();sfx.love();buzz([20,30,20]);floatEmoji(em.em,14);actorEmote(d.role==='him'?'him':'her',em.em);if(em.k==='night')goodnight();if(em.k==='dance')danceNow();toast(`${n} ${em.say} ${em.em}`,3500)}
 
 /* ---------- welcome ---------- */
 function chooseRole(r){me=r;lsSet('olh-role',r);const nm=$('#nm').value.trim().slice(0,14);if(nm){myName=nm;lsSet('olh-name',nm);if(r!=='both')commit({names:{[r]:nm}})}
@@ -967,7 +979,7 @@ function haloUpdate(){const h=document.getElementById('halo'),A=actors.her,B=act
 function buildBokeh(){const st=document.getElementById('stage');if(!st||st.querySelector('.bk'))return;for(let i=0;i<9;i++){const d=document.createElement('div'),s=rnd(26,84);d.className='bk';d.style.cssText=`width:${s}px;height:${s}px;left:${rnd(2,92).toFixed(0)}%;top:${rnd(8,88).toFixed(0)}%;background:radial-gradient(circle,rgba(${pick(['255,205,225','255,230,170','255,190,215'])},.55),rgba(255,255,255,0) 70%);animation-delay:${(-rnd(0,16)).toFixed(1)}s;animation-duration:${rnd(13,22).toFixed(0)}s`;st.appendChild(d)}}
 const actors={};
 function buildActors(){['her','him'].forEach(r=>{actors[r]={x:HOME[r][0],y:HOME[r][1],q:[],face:1,walk:false,work:false,sit:false,jump:false,online:false,task:null,tgt:'',bub:null,bt:0}});
-  $('#chars').innerHTML=['her','him'].map(r=>`<g class="actor" id="ch-${r}"><g class="pos"><circle class="hit" cx="0" cy="-30" r="22" fill="transparent" style="pointer-events:all"/><ellipse cx="0" cy="0" rx="10" ry="2.6" fill="#000" opacity=".18"/><g class="sc">${chSvg(r)}</g><g class="bb" style="display:none"><circle cx="0" cy="-80" r="11" fill="#fff" stroke="${ROLE[r].col}" stroke-width="2.4"/><text x="0" y="-75" font-size="13" text-anchor="middle"></text></g><text class="nmt" x="0" y="11" font-size="7.5" text-anchor="middle" fill="#fff" stroke="#3a2438" stroke-width="2.4" paint-order="stroke" font-family="Nunito" font-weight="800"></text></g></g>`).join('')}
+  $('#chars').innerHTML=['her','him'].map(r=>`<g class="actor" id="ch-${r}"><g class="pos"><circle class="hit" cx="0" cy="-30" r="22" fill="transparent" style="pointer-events:all"/><ellipse cx="0" cy="0" rx="10" ry="2.6" fill="#000" opacity=".18"/><g class="sc">${chSvg(r)}<g class="soot"><ellipse cx="0" cy="-33" rx="7.4" ry="7" fill="#2b2220" opacity=".6"/><circle cx="-2.8" cy="-33" r="1.7" fill="#fff"/><circle cx="2.8" cy="-33" r="1.7" fill="#fff"/><circle cx="-2.8" cy="-33" r=".7" fill="#2b1b2e"/><circle cx="2.8" cy="-33" r=".7" fill="#2b1b2e"/><path d="M-5 -40l-2.6 -4.4M0 -41.4l0 -5.4M5 -40l2.6 -4.4" stroke="#2b2220" stroke-width="1.3" stroke-linecap="round"/></g></g><g class="bb" style="display:none"><circle cx="0" cy="-80" r="11" fill="#fff" stroke="${ROLE[r].col}" stroke-width="2.4"/><text x="0" y="-75" font-size="13" text-anchor="middle"></text></g><text class="nmt" x="0" y="11" font-size="7.5" text-anchor="middle" fill="#fff" stroke="#3a2438" stroke-width="2.4" paint-order="stroke" font-family="Nunito" font-weight="800"></text></g></g>`).join('')}
 const floorOf=y=>y<400?0:y<520?1:2,FY=[290,496,556],ANC=[236,196];
 function pathTo(a,tx,ty){const f0=floorOf(a.y),f1=floorOf(ty),q=[];if(f0===f1){q.push([tx,ty])}else{const d=f1>f0?1:-1;let f=f0;while(f!==f1){const ex=ANC[f+(d>0?0:-1)];q.push([ex,FY[f]]);f+=d;q.push([ex,FY[f]])}q.push([tx,ty])}return q}
 function setTarget(r,key,pt){const a=actors[r];if(a.tgt===key)return;a.tgt=key;a.sit=false;a.work=false;a.hug=false;a.q=pathTo(a,pt[0],pt[1])}
@@ -989,7 +1001,7 @@ function renderActors(){for(const r in actors){const a=actors[r],el=document.get
   el.setAttribute('opacity',a.online?1:.45);
   el.querySelector('.pos').setAttribute('transform',`translate(${a.x.toFixed(1)} ${a.y.toFixed(1)})`);
   el.querySelector('.sc').setAttribute('transform',`scale(${(1.45*a.face).toFixed(2)} 1.45)`);
-  el.setAttribute('class','actor'+(a.walk?' walk':'')+(a.work&&!a.walk?' work':'')+(a.sit&&!a.walk?' sit':'')+(a.jump?' jump':'')+(a.hug&&!a.walk?' hug':'')+(dancing&&!a.walk?' dance':''));
+  el.setAttribute('class','actor'+(a.walk?' walk':'')+(a.work&&!a.walk?' work':'')+(a.sit&&!a.walk?' sit':'')+(a.jump?' jump':'')+(a.hug&&!a.walk?' hug':'')+(dancing&&!a.walk?' dance':'')+(a.soot?' sooty':''));
   const em=a.bt>0?a.bub:(a.work&&!a.walk&&a.task?(a.task==='notes'?'\u{1F48C}':TASKS[a.task].em):null),bb=el.querySelector('.bb');
   bb.style.display=em?'':'none';if(em)bb.querySelector('text').textContent=em;
   el.querySelector('.nmt').textContent=nameOf(r)+(a.online?'':' · away')}haloUpdate()}
@@ -1345,7 +1357,7 @@ function danceNow(){if(dancing)return;dancing=true;syncActors();renderActors();t
   setTimeout(()=>{clearInterval(danceT);dancing=false;syncActors();renderActors()},8000)}
 
 /* ---------- tickle: tap your partner ---------- */
-svg.addEventListener('click',e=>{if(cleaning||!me)return;const a=e.target.closest&&e.target.closest('.actor');if(!a)return;const role=a.id==='ch-him'?'him':'her',mr=myR();ac();
+svg.addEventListener('click',e=>{if(cleaning||sparking||!me)return;const a=e.target.closest&&e.target.closest('.actor');if(!a)return;const role=a.id==='ch-him'?'him':'her',mr=myR();ac();
   if(role!==mr){actorEmote(role,'😳');sfx.love();buzz(10);floatText(actors[role].x,actors[role].y-70,'hehe','#ffd1e6');if(room)room.emit('emote',{k:'poke',role:mr,name:myName||''}).catch(()=>{})}
   else{actorEmote(mr,'😊');sfx.pop()}});
 
@@ -1370,6 +1382,72 @@ $('#wishb').onclick=()=>{ac();sfx.tap();openWish()};
 
 /* a little night ambience */
 setInterval(()=>{if(!soundOn||!AC||document.hidden||Math.random()>.5)return;for(let k=0;k<3;k++)tone(4300+rnd(-100,100),.03,'square',.004,null,k*.07)},2400);
+
+/* ---------- crackers, sparklers and pranks ---------- */
+let sparking=false,lastSpk=0,prank=null;
+const fxAdd=(html,ms,id)=>{const g=document.getElementById(id||'fxg');if(!g)return null;const t=document.createElementNS(NS,'g');t.innerHTML=html;g.appendChild(t);if(ms)setTimeout(()=>t.remove(),ms);return t};
+const crkIcon={
+  anar:(x,y)=>`<g transform="translate(${x} ${y})"><path d="M-9 0L-6 -18H6L9 0Z" fill="#c8693f"/><rect x="-7" y="-20" width="14" height="4" rx="2" fill="#a94f2c"/><path d="M-6 -12H6" stroke="#ffd36b" stroke-width="1.6"/><path d="M0 -20q3 -6 7 -7" stroke="#3a2438" fill="none"/><circle class="fz" cx="7" cy="-27" r="2.4" fill="#ffd36b"/></g>`,
+  chakri:()=>`<g class="spin"><circle r="9" fill="none" stroke="#3a2438" stroke-width="3" stroke-dasharray="14 8"/><circle r="3" fill="#ff7a3d"/></g>`,
+  rocket:(x,y)=>`<g transform="translate(${x} ${y})"><rect x="-1.6" y="-34" width="3.2" height="34" fill="#c8a06a"/><path d="M-5 -34L0 -50L5 -34Z" fill="#e0457f"/><rect x="-5" y="-34" width="10" height="16" rx="2" fill="#ffd36b" stroke="#c2336f"/><circle class="fz" cx="0" cy="2" r="2.4" fill="#ffd36b"/></g>`,
+  sutli:(x,y)=>`<g transform="translate(${x} ${y})"><rect x="-4" y="-18" width="8" height="18" rx="1.5" fill="#d12f2f" stroke="#7a1a1a"/><rect x="-4" y="-12" width="8" height="3" fill="#ffd36b"/><path d="M0 -18q4 -6 8 -6" stroke="#3a2438" stroke-width="1.4" fill="none"/><circle class="fz" cx="8" cy="-24" r="2.4" fill="#ffd36b"/></g>`
+};
+function stageFlash(){const s=$('#stage');s.classList.add('flash');setTimeout(()=>s.classList.remove('flash'),170)}
+function boom(x,y){noise(.4,.4,260);tone(70,.35,'sine',.45,28);shake();stageFlash();burst(x,y-6,{n:70,sp:8,long:true,g:.1,colors:['#fff','#ffd36b','#ff7a3d']});buzz([60,30,100]);floatText(x,y-30,'BOOM!','#ffd36b')}
+function heartBurst(x,y){const [sx,sy]=svgToScreen(x,y),sc=svg.getScreenCTM().a,cols=['#ff5c8a','#ff8fb5','#ffd36b','#fff'];
+  for(let i=0;i<60;i++){const t=i/60*Math.PI*2,hx=16*Math.pow(Math.sin(t),3),hy=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+    parts.push({x:sx,y:sy,vx:hx*.075*sc,vy:-hy*.075*sc,g:.035,life:0,max:rnd(70,95),s:rnd(3,5.5),c:pick(cols),shape:'dot',r:0,vr:0})}
+  burst(x,y,{n:30,sp:6,long:true,g:.08,colors:['#ffd36b','#fff','#ff9ec9']});
+  if(!fxRun){fxRun=true;requestAnimationFrame(fxLoop)}}
+function scareAll(){['her','him'].forEach(r=>actorEmote(r,'😱'));const c=document.querySelector('[data-id="cat"]');if(c){floatText(240,455,'mrow!!','#ffd1a0')}}
+function boomAt(role,x,y){boom(x,y);const a=actors[role];if(a){a.soot=true;actorEmote(role,'😵');renderActors();setTimeout(()=>{a.soot=false;renderActors()},7000)}}
+function doCracker(d){const x=+d.x||200,c=d.c;ac();
+  if(c==='anar'){const y=506,el=fxAdd(crkIcon.anar(x,y),6500);noise(.5,.05,5000);
+    setTimeout(()=>{let n=0;const iv=setInterval(()=>{if(++n>100||!el){clearInterval(iv);return}burst(x,y-26,{n:3,sp:3.8,up:true,g:.1,colors:['#ffd36b','#fff3b0','#ff9a4d'],size:.8});if(n%3===0)noise(.12,.05,5200);if(Math.random()<.25)tone(2400+rnd(0,1500),.03,'square',.01)},45)},800)}
+  else if(c==='chakri'){let px=x,py=548+rnd(0,70);const el=fxAdd(`<g class="ck" transform="translate(${px} ${py})">${crkIcon.chakri()}</g>`,4800);noise(.5,.05,5000);
+    setTimeout(()=>{let n=0,vx=rnd(-1.4,1.4),vy=rnd(-.4,.6);const iv=setInterval(()=>{if(++n>90||!el){clearInterval(iv);return}px=clamp(px+vx,90,310);py=clamp(py+vy,520,640);if(n%12===0){vx=rnd(-1.6,1.6);vy=rnd(-.7,.7)}
+        const g=el.firstChild;if(g)g.setAttribute('transform',`translate(${px.toFixed(1)} ${py.toFixed(1)})`);burst(px,py,{n:3,sp:4,g:.06,colors:['#ff7eb6','#ffd36b','#9ee0ff','#b9f0a4'],size:.8});if(n%2===0)tone(500+(n%6)*140,.05,'sawtooth',.012)},45)},800)}
+  else if(c==='rocket'){const y0=520,ty=rnd(14,120);const el=fxAdd(crkIcon.rocket(x,y0),4500);noise(.6,.05,5000);
+    setTimeout(()=>{tone(380,1.1,'sine',.045,1700);let n=0;const steps=34;const iv=setInterval(()=>{n++;const y=y0-(y0-ty)*(n/steps)*(n/steps*.5+.5);const g=el&&el.firstChild;if(g)g.setAttribute('transform',`translate(${x} ${y.toFixed(1)})`);burst(x,y+2,{n:3,sp:2,g:.05,colors:['#ffd36b','#ff9a4d','#fff'],size:.7});
+      if(n>=steps){clearInterval(iv);if(el)el.remove();sfx.boom&&sfx.boom();heartBurst(x,ty);stageFlash();buzz([30,40,30]);floatText(x,ty+46,'for you 💗','#ffd1e6')}},32)},900)}
+  else if(c==='sutli'){const y=512,el=fxAdd(crkIcon.sutli(x,y),2200);noise(.9,.05,5000);let n=0;const iv=setInterval(()=>{n++;tone(480+n*60,.05,'square',.04);burst(x+8,y-24,{n:2,sp:2,g:.04,colors:['#ffd36b','#fff']});if(n>=4){clearInterval(iv);if(el)el.remove();boom(x,y);scareAll()}},300)}}
+function onCrk(d){
+  if(d.c==='prank')return receivePrank(d);
+  if(d.c==='prankres'){const who=nameOf(d.role==='him'?'him':'her');if(d.ok)toast(`${who} defused it. Boring 😒`,3000);else{const a=actors[d.role];if(a)boomAt(d.role,a.x,a.y);toast(`💥 Got ${who}! Covered in soot 😂`,3500)}return}
+  if(d.c==='spark'){burst(+d.x,+d.y,{n:3,sp:1.6,g:.03,long:true,colors:d.role==='him'?['#d6e6ff','#7fb2ff','#fff']:['#ffe0ee','#ff8fb5','#fff'],size:.7});if(Math.random()<.3)noise(.04,.04,7000);return}
+  const who=nameOf(d.role==='him'?'him':'her'),name={anar:'an anar',chakri:'a chakri',rocket:'a heart rocket',sutli:'a sutli bomb'}[d.c];if(name)toast(`${who} lit ${name} 🧨`,2200);doCracker(d)}
+function receivePrank(d){if(!me||prank)return;const mr=myR(),a=actors[mr],x=a.x,y=a.y,from=nameOf(d.role==='him'?'him':'her');
+  const el=fxAdd(`<g id="prankbomb" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" style="cursor:pointer"><circle cy="-8" r="16" fill="transparent"/><circle cy="-8" r="9" fill="#d12f2f" stroke="#7a1a1a" stroke-width="1.6"/><rect x="-3" y="-20" width="6" height="5" fill="#3a2438"/><path d="M0 -20q6 -8 10 -6" stroke="#3a2438" stroke-width="1.6" fill="none"/><circle class="fz" cx="10" cy="-27" r="2.6" fill="#ffd36b"/></g>`,0,'fxg2');
+  prank={el,from:d.role};toast(`${from} lit a sutli bomb at your feet! Tap it, quick!`,2600);ac();let n=0;
+  prank.iv=setInterval(()=>{n++;tone(500+n*70,.06,'square',.05);buzz(15);burst(x+10,y-28,{n:2,sp:2,colors:['#ffd36b','#fff'],g:.05})},300);
+  prank.to=setTimeout(()=>{clearInterval(prank.iv);el.remove();prank=null;boomAt(mr,x,y);toast('BOOM! You are covered in soot 😂',3000);if(room)room.emit('emote',{k:'crk',c:'prankres',ok:false,role:mr,name:myName||''}).catch(()=>{})},2700)}
+svg.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#prankbomb');if(!b||!prank)return;clearInterval(prank.iv);clearTimeout(prank.to);prank.el.remove();prank=null;sfx.chime();buzz(20);const a=actors[myR()];floatText(a.x,a.y-50,'defused!','#fff');toast('Defused! 😅',2200);if(room)room.emit('emote',{k:'crk',c:'prankres',ok:true,role:myR(),name:myName||''}).catch(()=>{})});
+
+/* the sparkler: draw in the air, your partner sees it live */
+function startSpark(){sparking=true;current='spark';setPresence();$('#bar').classList.add('hide');$('#sparkbar').classList.add('show');svg.classList.add('scrubmode');renderSpots();camTo(homeCam(),700);toast('Draw in the sky with your sparkler. Write a name. Draw a heart.',3800)}
+function endSpark(){if(!sparking)return;sparking=false;if(current==='spark')current=null;$('#sparkbar').classList.remove('show');svg.classList.remove('scrubmode');$('#bar').classList.remove('hide');setPresence();renderSpots()}
+$('#sparkdone').onclick=()=>{sfx.tap();endSpark()};
+let sparkDown=false;
+svg.addEventListener('pointerdown',e=>{if(!sparking)return;e.preventDefault();ac();sparkDown=true;try{svg.setPointerCapture(e.pointerId)}catch(_){}});
+svg.addEventListener('pointermove',e=>{if(!sparking||!sparkDown)return;e.preventDefault();const p=svgPt(e),now=performance.now();
+  burst(p.x,p.y,{n:3,sp:1.5,g:.03,long:true,colors:['#fff6c0','#ffd36b','#ff9a4d'],size:.7});if(Math.random()<.5)noise(.04,.05,7000);if(Math.random()<.12)tone(3000+rnd(0,2000),.03,'square',.008);
+  if(now-lastSpk>70){lastSpk=now;if(room)room.emit('emote',{k:'crk',c:'spark',x:+p.x.toFixed(1),y:+p.y.toFixed(1),role:myR()}).catch(()=>{})}});
+const spkEnd=()=>{sparkDown=false};svg.addEventListener('pointerup',spkEnd);svg.addEventListener('pointercancel',spkEnd);
+
+/* the cracker box */
+function openCrackers(){if(current||cleaning||!me)return;if(!isCleaned()){toast('Clean the house first, then the crackers come out 🧨');return}
+  current='crk';setPresence();openSheet('any','Crackers!');S.say('Pick one. Your partner sees and hears it too.');
+  const C=[['anar','⛲','Anar'],['chakri','🌀','Chakri'],['rocket','🚀','Heart rocket'],['sutli','🧨','Sutli bomb'],['spark','🎇','Sparkler'],['prank','😈','Prank bomb']];
+  sbody.innerHTML=`<div class="choices c3">${C.map(([k,e,t])=>`<button class="ch" data-k="${k}"><b>${e}</b>${t}</button>`).join('')}</div><div class="hint" style="margin-top:8px;font-size:13px">Prank bomb plants a lit sutli at your partner's feet. They have 2 seconds to defuse it.</div>`;
+  sbody.onclick=e=>{const b=e.target.closest('.ch');if(!b)return;sfx.pop();buzz(8);const k=b.dataset.k;closeSheet();setTimeout(()=>fire(k),400)}}
+function fire(k){const mr=myR();
+  if(k==='spark')return startSpark();
+  if(k==='prank'){if(!others()[0]){toast('Your partner has to be here for a prank 😈');return}if(room)room.emit('emote',{k:'crk',c:'prank',role:mr,name:myName||''}).catch(()=>{});toast('Fuse lit at their feet… 😈',2500);return}
+  const d={k:'crk',c:k,x:+rnd(120,280).toFixed(0),role:mr,name:myName||''};doCracker(d);if(room)room.emit('emote',d).catch(()=>{})}
+const crkb=document.createElement('button');crkb.className='em';crkb.id='crkb';crkb.innerHTML='<span>🧨</span>Crackers';$('#bar').insertBefore(crkb,$('#finale'));crkb.onclick=()=>{ac();sfx.tap();openCrackers()};
+
+/* far-off strings of crackers somewhere in the neighbourhood */
+setInterval(()=>{if(!soundOn||!AC||document.hidden||Math.random()>.25)return;const n=6+Math.floor(rnd(0,10));for(let i=0;i<n;i++)noise(.05,.05,2500+rnd(0,2500),i*.07)},9000);
 
 /* ---------- boot ---------- */
 function resize(){sizeFx();if(!current)setCam(homeCam());else setCam(spotCam(TASKS[current]?TASKS[current].cam:[62,420,200]))}
