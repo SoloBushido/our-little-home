@@ -260,6 +260,19 @@ input.txt{width:100%;padding:11px 14px;border-radius:14px;border:2.5px solid var
 #stage::after{mix-blend-mode:normal;background:radial-gradient(ellipse at 50% 38%,rgba(255,226,180,.12),transparent 64%),linear-gradient(180deg,rgba(255,160,200,.06),rgba(255,210,150,.04))}
 #beatglow{mix-blend-mode:normal;will-change:opacity;background:radial-gradient(circle at 50% 75%,rgba(255,200,130,.28),transparent 70%)}
 #fx,#vig{will-change:transform}
+
+/* v10: cheaper rendering */
+#camwrap{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
+#grime{position:absolute;pointer-events:none;transition:opacity 1.4s}
+#sponge{position:absolute;left:0;top:0;width:38px;height:26px;border-radius:9px;border:2px solid #d99a1a;background:linear-gradient(#ffd54a 60%,#3fb86a 60%);z-index:5;pointer-events:none;display:none;will-change:transform;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+#ghost{position:absolute;left:0;top:0;width:38px;height:26px;border-radius:9px;z-index:5;pointer-events:none;display:none;will-change:transform;opacity:.9}
+#ghost.her{background:linear-gradient(#ffb3d1 60%,#fff 60%);border:2px solid #e0457f}
+#ghost.him{background:linear-gradient(#a9cbff 60%,#fff 60%);border:2px solid #2f6fcf}
+#ghost b{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font:800 11px Nunito,sans-serif;color:#fff;text-shadow:0 0 3px #3a2438,0 0 3px #3a2438;white-space:nowrap}
+#flashov{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:5}
+@keyframes fl{0%{opacity:.55}100%{opacity:0}}
+#vig{background:radial-gradient(ellipse at 50% 55%,rgba(60,20,70,0) 55%,rgba(60,20,70,.34) 100%);transition:opacity 1s}
+@media (pointer:coarse){.cloud,.sway,.jig,.tail,.bb,.spot .bub{animation:none}.petal{animation:none;opacity:0}#stars circle{animation:none!important}.actor .bodyg{animation:none}}
 </style>
 
 <div id="app">
@@ -464,7 +477,7 @@ const buzz=(n=10)=>{try{if(navigator.vibrate&&(!navigator.userActivation||naviga
 const fxc=$('#fx'),fctx=fxc.getContext('2d');let parts=[],fxRun=false,DPR=1;
 function sizeFx(){const r=$('#stage').getBoundingClientRect();DPR=Math.min(1.5,devicePixelRatio||1);fxc.width=r.width*DPR;fxc.height=r.height*DPR}
 function svgToScreen(x,y){const s=$('#scene'),p=s.createSVGPoint();p.x=x;p.y=y;const m=s.getScreenCTM();const q=p.matrixTransform(m);const r=$('#stage').getBoundingClientRect();return [q.x-r.left,q.y-r.top]}
-function burst(x,y,o={}){const [sx,sy]=o.screen?[x,y]:svgToScreen(x,y);const n=reduce?Math.ceil((o.n||14)/3):(o.n||14),cols=o.colors||['#ffd36b','#ff8fb5','#fff'];
+function burst(x,y,o={}){if(parts.length>320)return;const [sx,sy]=o.screen?[x,y]:svgToScreen(x,y);const n=reduce?Math.ceil((o.n||14)/3):(o.n||14),cols=o.colors||['#ffd36b','#ff8fb5','#fff'];
   for(let i=0;i<n;i++){const a=o.up?rnd(-Math.PI*.9,-Math.PI*.1):rnd(0,Math.PI*2),sp=rnd(1.5,(o.sp||5));parts.push({x:sx,y:sy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:o.g??.12,life:0,max:rnd(40,80)*(o.long?1.6:1),s:rnd(2.5,6)*(o.size||1),c:pick(cols),shape:o.shape||'dot',em:o.em,r:rnd(0,6),vr:rnd(-.2,.2)})}
   if(!fxRun){fxRun=true;requestAnimationFrame(fxLoop)}}
 function floatEmoji(em,n=8,fromX,fromY){const r=$('#stage').getBoundingClientRect();for(let i=0;i<n;i++){parts.push({x:(fromX??r.width/2)+rnd(-40,40),y:(fromY??r.height-60)+rnd(-10,10),vx:rnd(-.8,.8),vy:rnd(-3.2,-1.6),g:-.01,life:-i*4,max:rnd(90,140),s:rnd(22,38),shape:'em',em,r:0,vr:rnd(-.02,.02),c:'#000'})}
@@ -571,7 +584,7 @@ function buildScene(){
   <g id="decor">
     <g id="d-rangoli"></g><g id="d-cables"></g><g id="d-bedsheet"></g><g id="d-photos"></g><g id="d-plants"></g><g id="d-sofa"></g><g id="d-chai"></g><g id="d-notes"></g><g id="d-clean"></g><g id="d-puja"></g><g id="d-flowers"></g><g id="d-toran"></g><g id="d-diyas"></g>
   </g>
-  <g id="grime" mask="url(#gm)" pointer-events="none">${grimeSvg()}</g><g id="motes">${Array.from({length:22},()=>`<circle class="mote" cx="${rnd(50,350).toFixed(0)}" cy="${rnd(120,480).toFixed(0)}" r="${rnd(.8,1.9).toFixed(1)}" fill="#fff4cf" style="animation-delay:${rnd(0,9).toFixed(1)}s"/>`).join("")}</g><g id="halo" style="opacity:0" pointer-events="none"><circle r="50" fill="url(#loveG)" opacity=".7"/><use class="beat" href="#hrt" x="-9" y="-64" width="18" height="18" fill="#ff5c8a"/></g><g id="chars"></g><rect id="dim" x="30" y="92" width="340" height="414" fill="#3a1a8a" opacity="0" pointer-events="none"/>
+  <g id="motes">${Array.from({length:22},()=>`<circle class="mote" cx="${rnd(50,350).toFixed(0)}" cy="${rnd(120,480).toFixed(0)}" r="${rnd(.8,1.9).toFixed(1)}" fill="#fff4cf" style="animation-delay:${rnd(0,9).toFixed(1)}s"/>`).join("")}</g><g id="halo" style="opacity:0" pointer-events="none"><circle r="50" fill="url(#loveG)" opacity=".7"/><use class="beat" href="#hrt" x="-9" y="-64" width="18" height="18" fill="#ff5c8a"/></g><g id="chars"></g><rect id="dim" x="30" y="92" width="340" height="414" fill="#3a1a8a" opacity="0" pointer-events="none"/>
   <path id="rays" d="M223 136L88 296H268Z" fill="#fff4b8" opacity=".3" pointer-events="none"/>
   <g id="lamps" pointer-events="none"><circle cx="213" cy="246" r="60" fill="url(#lampG)"/><circle cx="152" cy="432" r="38" fill="url(#lampG)" opacity=".8"/><circle cx="200" cy="330" r="110" fill="url(#lampG)" opacity=".28"/></g>
   <g id="d-sign"></g><g id="d-lights"></g>
@@ -583,7 +596,7 @@ function buildScene(){
     return h})()}</g>
   <g id="petals" pointer-events="none">${petals}</g>
   <g id="shrub" pointer-events="none">${blossom(384,492,22,10)}</g>
-  <g id="fxg" pointer-events="none"></g><g id="fxg2"></g><g id="sponge" style="display:none" pointer-events="none"><g transform="translate(0 -4)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#ffd54a" stroke="#d99a1a" stroke-width="1.4"/><rect x="-13" y="2" width="26" height="6" rx="3" fill="#3fb86a" opacity=".9"/><circle cx="-6" cy="-3" r="1.4" fill="#e0b020"/><circle cx="4" cy="-4" r="1.2" fill="#e0b020"/><circle cx="8" cy="-1" r="1.6" fill="#e0b020"/><circle cx="-9" cy="-14" r="3" fill="#fff" opacity=".7"/><circle cx="2" cy="-18" r="2.2" fill="#fff" opacity=".7"/></g></g><g id="ghost" style="display:none" pointer-events="none"><g transform="translate(0 -4)"><rect id="ghostbody" x="-13" y="-8" width="26" height="16" rx="5" fill="#ff8fb5" stroke="#e0457f" stroke-width="1.4"/><rect x="-13" y="2" width="26" height="6" rx="3" fill="#fff" opacity=".6"/></g><text id="ghostname" y="-16" text-anchor="middle" font-size="9" fill="#fff" stroke="#3a2438" stroke-width="2.4" paint-order="stroke" font-family="Nunito" font-weight="800"></text></g><g id="spots"></g><g id="badges"></g>`;
+  <g id="fxg" pointer-events="none"></g><g id="fxg2"></g><g id="spots"></g><g id="badges"></g>`;
 }
 
 /* ---------- sky & light, driven by how finished the home is ---------- */
@@ -594,7 +607,7 @@ function applySky(p){skyP=p;const c=skyAt(p);$('#sg0').setAttribute('stop-color'
   $('#stars').setAttribute('opacity',(.4+clamp((p-.5)/.5,0,1)*.6).toFixed(2));
   const night=true,x=60+p*250,y=150-Math.sin(clamp(p/.9,0,1)*Math.PI)*110;
   $('#celestial').innerHTML=night?`<circle cx="338" cy="20" r="48" fill="#fff6d8" opacity=".18"/><circle cx="338" cy="20" r="34" fill="#fff6d8" opacity=".22"/><circle cx="338" cy="20" r="22" fill="#fff6d8"/><circle cx="331" cy="14" r="4" fill="#eadfb8"/><circle cx="345" cy="27" r="3" fill="#eadfb8"/>`:`<circle cx="${x}" cy="${y}" r="70" fill="#fff" opacity=".16"/><circle cx="${x}" cy="${y}" r="38" fill="#fff" opacity=".35"/><circle cx="${x}" cy="${y}" r="22" fill="${mix('#ffd24a','#ff8a5c',clamp(p,0,1))}"/>`;
-  $('#dim').setAttribute('opacity',(clamp((p-.55)/.45,0,1)*.3).toFixed(2));const nv=clamp((p-.5)/.5,0,1);$('#vig').style.boxShadow=`inset 0 0 ${120+nv*60}px ${10+nv*20}px rgba(${Math.round(70-nv*50)},${Math.round(25-nv*15)},${Math.round(60-nv*10)},${(.1+nv*.25).toFixed(2)})`;$('#rays').setAttribute('opacity',(clamp(1-p/.9,0,1)*.3+.05).toFixed(2))}
+  $('#dim').setAttribute('opacity',(clamp((p-.55)/.45,0,1)*.3).toFixed(2));const nv=clamp((p-.5)/.5,0,1);$('#vig').style.opacity=(.35+nv*.65).toFixed(2);$('#rays').setAttribute('opacity',(clamp(1-p/.9,0,1)*.3+.05).toFixed(2))}
 const TOTAL_STEPS=19;
 function stepsDone(){return Object.keys(TASKS).reduce((n,id)=>n+TASKS[id].steps.filter((_,i)=>rec(id)['s'+i]).length,0)}
 const allDone=()=>stepsDone()>=TOTAL_STEPS;
@@ -1321,9 +1334,9 @@ function scrubStep(p,sp){const R=10;let n=markCells(p.x,p.y,R,mineC);
   else if(Math.random()<.04)tone(900+rnd(0,900),.05,'sine',.03);
   if(now-lastBuzz>70){lastBuzz=now;buzz(4)}
   if(room&&now-lastEmit>90){lastEmit=now;room.emit('brush',{x:+p.x.toFixed(1),y:+p.y.toFixed(1),r:myR()}).catch(()=>{})}}
-svg.addEventListener('pointerdown',e=>{if(!cleaning)return;e.preventDefault();ac();music.start();try{svg.setPointerCapture(e.pointerId)}catch(_){}const p=svgPt(e);sd=null;scrubSoundStart();scrubStep(p,0);sd={x:p.x,y:p.y,t:performance.now(),sp:0};spongeAt(p.x,p.y,0)});
+svg.addEventListener('pointerdown',e=>{if(!cleaning)return;e.preventDefault();ac();music.start();try{svg.setPointerCapture(e.pointerId)}catch(_){}const p=svgPt(e);sd=null;scrubSoundStart();stamp(p.x,p.y);scrubStep(p,0);sd={x:p.x,y:p.y,t:performance.now(),sp:0};spongeAt(p.x,p.y,0)});
 svg.addEventListener('pointermove',e=>{if(!cleaning||!sd)return;e.preventDefault();const p=svgPt(e),now=performance.now(),dx=p.x-sd.x,dy=p.y-sd.y,d=Math.hypot(dx,dy),dt=Math.max(8,now-sd.t);if(d<1.2)return;
-  const sp=d/dt,g=document.getElementById('gmCuts'),ln=document.createElementNS(NS,'line');ln.setAttribute('x1',sd.x);ln.setAttribute('y1',sd.y);ln.setAttribute('x2',p.x);ln.setAttribute('y2',p.y);ln.setAttribute('stroke-width','18');ln.setAttribute('stroke-linecap','round');g.appendChild(ln);strokes.push(ln);if(strokes.length>30)strokes.shift().remove();
+  const sp=d/dt;stampLine(sd.x,sd.y,p.x,p.y);
   scrubStep(p,sp);if(!sd)return;sd.sp=sd.sp*.7+sp*.3;sd.x=p.x;sd.y=p.y;sd.t=now;spongeAt(p.x,p.y,clamp(dx*1.2,-25,25));scrubSound(sd.sp)});
 const scrubEnd=()=>{if(!sd)return;sd=null;streakN=0;scrubSoundStop();const s=$('#sponge');if(s)s.style.display='none';flushClean()};
 svg.addEventListener('pointerup',scrubEnd);svg.addEventListener('pointercancel',scrubEnd);
@@ -1424,7 +1437,7 @@ const crkIcon={
 };
 function stageFlash(){const s=$('#stage');s.classList.add('flash');setTimeout(()=>s.classList.remove('flash'),170)}
 function boom(x,y){noise(.4,.4,260);tone(70,.35,'sine',.45,28);shake();stageFlash();burst(x,y-6,{n:70,sp:8,long:true,g:.1,colors:['#fff','#ffd36b','#ff7a3d']});buzz([60,30,100]);floatText(x,y-30,'BOOM!','#ffd36b')}
-function heartBurst(x,y){const [sx,sy]=svgToScreen(x,y),sc=svg.getScreenCTM().a,cols=['#ff5c8a','#ff8fb5','#ffd36b','#fff'];
+function heartBurst(x,y){const [sx,sy]=svgToScreen(x,y),sc=stageRect().width/cam.w,cols=['#ff5c8a','#ff8fb5','#ffd36b','#fff'];
   for(let i=0;i<60;i++){const t=i/60*Math.PI*2,hx=16*Math.pow(Math.sin(t),3),hy=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
     parts.push({x:sx,y:sy,vx:hx*.075*sc,vy:-hy*.075*sc,g:.035,life:0,max:rnd(70,95),s:rnd(3,5.5),c:pick(cols),shape:'dot',r:0,vr:0})}
   burst(x,y,{n:30,sp:6,long:true,g:.08,colors:['#ffd36b','#fff','#ff9ec9']});
@@ -1561,13 +1574,71 @@ function streakHit(n,p){streakN+=n;clearTimeout(streakT);streakT=setTimeout(()=>
   if(Math.floor(streakN/40)>Math.floor((streakN-n)/40)){const k=Math.floor(streakN/40);bell(PENT[k%7]*2,0,.5,.05);floatText(p.x,p.y-26,pick(['nice!','smooth','sparkly ✨','so clean','mmm','shiny!']),'#fff');burst(p.x,p.y,{n:10,sp:4,up:true,colors:['#fff','#ffe9a8','#bfe6ff']});buzz(12)}}
 addEventListener('pointerdown',e=>{if(cleaning||sparking||!e.isPrimary)return;const sr=$('#stage').getBoundingClientRect();burst(e.clientX-sr.left,e.clientY-sr.top,{screen:true,n:5,sp:3,g:.05,colors:['#fff','#ffe9a8','#ffc2dc'],size:.8})},true);
 
+/* ---------- performance: GPU camera, canvas dirt, cheap coordinate maths ---------- */
+const cw=document.createElement('div');cw.id='camwrap';svg.parentNode.insertBefore(cw,svg);cw.appendChild(svg);
+let SR=null;const stageRect=()=>{if(!SR||SR.width<20)SR=$('#stage').getBoundingClientRect();return SR};
+addEventListener('resize',()=>{SR=null});addEventListener('orientationchange',()=>{SR=null});
+function svgToScreen(x,y){const r=stageRect(),k=r.width/cam.w;return[(x-cam.x)*k,(y-cam.y)*k]}
+function svgPt(e){const r=stageRect(),k=r.width/cam.w;return{x:cam.x+(e.clientX-r.left)/k,y:cam.y+(e.clientY-r.top)/k}}
+
+/* the camera glides on the graphics card instead of redrawing the whole house every frame */
+let camWA=null;
+function curView(){if(!camWA||camWA.playState!=='running')return cam;try{const m=new DOMMatrix(getComputedStyle(cw).transform),S=m.a||1,Rw=cam.w/S,kR=stageRect().width/Rw;return{x:cam.x-m.e/kR,y:cam.y-m.f/kR,w:Rw,h:cam.h/S}}catch(e){return cam}}
+function setCam(c){cam=c;svg.setAttribute('viewBox',`${c.x} ${c.y} ${c.w} ${c.h}`);syncGrime()}
+function camTo(c,ms=800){const from=curView();if(camWA){camWA.cancel();camWA=null}
+  setCam(c);if(reduce||ms<=1||!cw.animate)return;
+  const kR=stageRect().width/from.w,S0=c.w/from.w,Tx=kR*(c.x-from.x),Ty=kR*(c.y-from.y);
+  const a=cw.animate([{transform:`translate(${Tx}px,${Ty}px) scale(${S0})`},{transform:'translate(0px,0px) scale(1)'}],{duration:ms,easing:'cubic-bezier(.22,.8,.3,1)'});
+  camWA=a;a.onfinish=a.oncancel=()=>{if(camWA===a)camWA=null};setTimeout(()=>{if(camWA===a){try{a.finish()}catch(e){}}},ms+300)}
+
+/* the dirt is one canvas; scrubbing just erases pixels */
+const GK=3.5,GXC=32,GYC=94,GW=344,GH=560;
+const gc=document.createElement('canvas');gc.id='grime';gc.width=Math.round(GW*GK);gc.height=Math.round(GH*GK);cw.appendChild(gc);
+const gx=gc.getContext('2d');
+function syncGrime(){const k=stageRect().width/cam.w;gc.style.left=((GXC-cam.x)*k)+'px';gc.style.top=((GYC-cam.y)*k)+'px';gc.style.width=(GW*k)+'px';gc.style.height=(GH*k)+'px'}
+(function drawGrime(){const g=gx;g.setTransform(GK,0,0,GK,-GXC*GK,-GYC*GK);g.globalCompositeOperation='source-over';
+  g.fillStyle='rgba(106,88,78,.34)';g.fillRect(32,94,338,408);
+  for(let i=0;i<46;i++){g.fillStyle=`rgba(74,58,52,${rnd(.1,.22).toFixed(2)})`;g.beginPath();g.ellipse(rnd(40,360),rnd(104,498),rnd(10,34),rnd(6,20),0,0,7);g.fill()}
+  for(let i=0;i<44;i++){g.fillStyle='rgba(61,47,42,.32)';g.beginPath();g.arc(rnd(40,360),rnd(104,498),rnd(1.2,3.4),0,7);g.fill()}
+  g.lineCap='round';for(let i=0;i<9;i++){const x=rnd(50,350);g.strokeStyle='rgba(74,58,52,.24)';g.lineWidth=rnd(2,4);g.beginPath();g.moveTo(x,106);g.lineTo(x,rnd(130,200));g.stroke()}
+  g.fillStyle='rgba(216,211,196,.64)';g.fillRect(200,130,46,78);
+  const web=(x,y,d)=>new Path2D(`M${x} ${y}q${d*8} 2 ${d*26} 24M${x} ${y}q${d*3} 10 ${d*15} 30M${x} ${y}q${d*14} -2 ${d*32} 13M${x+d*7} ${y+4}q${d*5} 8 ${d*3} 16M${x+d*15} ${y+9}q${d*3} 8 ${d*-2} 12`);
+  g.strokeStyle='rgba(236,230,236,.92)';g.lineWidth=1;for(const [x,y,d] of [[40,104,1],[360,104,-1],[40,304,1],[360,304,-1],[258,104,1],[126,304,-1]])g.stroke(web(x,y,d));
+  g.fillStyle='rgba(207,198,205,.92)';for(const x of [70,96,150,256,290,338]){g.beginPath();g.ellipse(x,493,9,4,0,0,7);g.fill()}
+  g.fillStyle='rgba(122,106,88,.44)';g.beginPath();g.ellipse(201,577,108,68,0,0,7);g.fill();
+  for(let i=0;i<28;i++){const a=rnd(0,6.28),r=rnd(0,95),x=200+Math.cos(a)*r,y=576+Math.sin(a)*r*.62;g.save();g.translate(x,y);g.rotate(rnd(0,3.14));g.fillStyle=pick(['#b9742f','#8a5a2a','#c98f3a','#a0522d']);g.beginPath();g.ellipse(0,0,6,2.6,0,0,7);g.fill();g.restore()}
+})();
+const brush=document.createElement('canvas');brush.width=brush.height=Math.round(26*GK);
+(function(){const b=brush.getContext('2d'),r=brush.width/2,g=b.createRadialGradient(r,r,r*.35,r,r,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');b.fillStyle=g;b.fillRect(0,0,brush.width,brush.width)})();
+function stamp(x,y){gx.globalCompositeOperation='destination-out';gx.drawImage(brush,x-13,y-13,26,26)}
+function stampLine(x0,y0,x1,y1){const d=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.ceil(d/4));for(let i=1;i<=n;i++)stamp(x0+(x1-x0)*i/n,y0+(y1-y0)*i/n)}
+function addCut(i){if(drawn[i])return;drawn[i]=1;const q=cellC(i);gx.globalCompositeOperation='destination-out';gx.fillStyle='#000';gx.beginPath();gx.arc(q[0],q[1],8.5,0,7);gx.fill()}
+
+/* sponge and your partner's sponge are plain page elements above everything */
+const spongeEl=document.createElement('div');spongeEl.id='sponge';$('#stage').appendChild(spongeEl);
+const ghostEl=document.createElement('div');ghostEl.id='ghost';ghostEl.innerHTML='<i></i><b></b>';$('#stage').appendChild(ghostEl);
+function spongeAt(x,y,a){const q=svgToScreen(x,y);spongeEl.style.display='block';spongeEl.style.transform=`translate(${(q[0]-19).toFixed(1)}px,${(q[1]-22).toFixed(1)}px) rotate(${a.toFixed(0)}deg)`}
+function onBrush(m){if(m.sameTab||m.isMe)return;const d=m.data||{};if(typeof d.x!=='number'||typeof d.y!=='number')return;
+  const x=clamp(d.x,-50,450),y=clamp(d.y,0,700),q=svgToScreen(x,y),him=d.r==='him';
+  ghostEl.style.display='block';ghostEl.style.transform=`translate(${(q[0]-19).toFixed(1)}px,${(q[1]-22).toFixed(1)}px)`;ghostEl.className=him?'him':'her';ghostEl.lastChild.textContent=nameOf(him?'him':'her');clearTimeout(ghostT);ghostT=setTimeout(()=>{ghostEl.style.display='none'},800);
+  stamp(x,y);const n=markCells(x,y,10,otherC);if(n){checkZones(cleaning);updateCleanUI()}
+  const now=performance.now();
+  if(now-lastSw>140){lastSw=now;noise(.12,.035,2600);if(Math.random()<.3)burst(x,y,{n:1,colors:['#fff','#ffe9a8'],sp:2,g:.02})}
+  if(sd&&now-lastTog>2600){lastTog=now;burst((sd.x+x)/2,(sd.y+y)/2,{n:3,shape:'heart',colors:['#ff7eb6','#e0457f','#ffb3d1'],up:true,sp:2,g:-.01,long:true});tone(PENT[2]/2,.6,'sine',.04);tone(PENT[4]/2,.6,'sine',.03,null,.1);if(!tgToast){tgToast=true;toast('Cleaning side by side 💞',2600)}}}
+
+/* flash without filtering the whole screen */
+const flashEl=document.createElement('div');flashEl.id='flashov';$('#stage').appendChild(flashEl);
+function stageFlash(){flashEl.style.animation='none';void flashEl.offsetWidth;flashEl.style.animation='fl .22s ease-out'}
+
+setTimeout(()=>{SR=null;setCam(cam)},300);addEventListener("load",()=>{SR=null;setCam(cam)});
+
 /* ---------- boot ---------- */
 function resize(){sizeFx();if(!current)setCam(homeCam());else setCam(spotCam(TASKS[current]?TASKS[current].cam:[62,420,200]))}
 addEventListener('resize',resize);
 buildScene();(function(){const el=document.getElementById('celestial'),d=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');Object.defineProperty(el,'innerHTML',{configurable:true,get(){return d.get.call(this)},set(v){if(this.__v===v)return;this.__v=v;d.set.call(this,v)}})})();buildActors();buildBokeh();sizeFx();setCam(homeCam());applySky(0);afterState();
 if(!me)$('#welcome').classList.add('show');
 initNet().then(()=>{onPeers();if(me&&!isCleaned()&&!$('#welcome').classList.contains('show'))setTimeout(startClean,900)});
-window.__olh={state:()=>state,TASKS,openTask,commit};
+window.__olh={state:()=>state,TASKS,openTask,commit,setCam,camTo,cam:()=>cam,stageAspect};
 })();
 </script>
 
