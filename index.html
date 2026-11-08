@@ -328,7 +328,10 @@ const lsG=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsS=(k,v
 const NTFY='https://ntfy.sh/';
 const rid=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>'abcdefghijkmnpqrstuvwxyz23456789'[b%32]).join('');
 const pid=rid(8);
-let code=(location.hash.replace(/^#/,'').trim()||lsG('olh-room')||'').toLowerCase().replace(/[^a-z0-9-]/g,'');
+const wipe=()=>{try{Object.keys(localStorage).filter(k=>k.indexOf('olh-')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{sessionStorage.clear()}catch(e){}};
+let code=location.hash.replace(/^#/,'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+/* not in a room: forget everything on this device. different room than last time: start clean too */
+if(code.length<6){code='';wipe()}else if(lsG('olh-room')!==code)wipe();
 let readyRes;const ready=new Promise(r=>readyRes=r);
 const clone=o=>JSON.parse(JSON.stringify(o));
 const orStr=(a,b)=>{const n=Math.max(a.length,b.length);let o='';for(let i=0;i<n;i++)o+=(a[i]==='1'||b[i]==='1')?'1':'0';return o};
